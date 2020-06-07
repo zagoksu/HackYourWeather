@@ -1,13 +1,19 @@
 import React from 'react';
+import '../App.css'
 
 export default function CityCard(props) {
     if (props.responseObj.cod !== 200) {
         return <p> Please enter a valid city name! </p>;
       } else {
         
-   return (
+    return (
             <div className="cityBox">
                 <div className="city">
+                <div
+                    className="close-city" onClick={() => { props.deleteCity(props.responseObj.id);}}
+                    >
+                    <i className="fa fa-times-circle fa-2x"></i>
+                    </div>
                     <h2>{props.responseObj.name}, {props.responseObj.sys.country}</h2>
                     <div className="weather">
                         <h3>{props.responseObj.weather[0].main}</h3>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import CityCard from './CityCard';
+import Button from './Button';
 
 export default function Forecast(props) {
    const [responseObj, setResponseObj] = useState({});
+   const [cityCards, setCityCards] = useState([])
    const [input, setInput] = useState('');
    const [error, setError] = useState(false);
    const [isLoading, setLoading] = useState(false);
@@ -11,7 +13,6 @@ export default function Forecast(props) {
    const URL = `https://api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${API_KEY}`;
 
    function getForecast(event) { 
-       event.preventDefault();
        if (input.length === 0) {
             return setError(true);
         }
@@ -21,9 +22,9 @@ export default function Forecast(props) {
 
         fetch(URL)
             .then(response => response.json())
-            .then(response => {
+            .then(data => {
 
-            setResponseObj(response);
+            setCityCards((cityList) => [data, ...cityList]);
             setLoading(false);
         })
         .catch(err => {
@@ -38,27 +39,42 @@ export default function Forecast(props) {
     setInput(value);
   };
 
-   return (
+  const onSubmit = (e) => {
+    getForecast();
+    e.preventDefault();
+  };
+
+  const deleteCity = (id) => {
+    setCityCards((cityList) => {
+      cityList = cityList.filter((card) => card.id !== id);
+      return cityList;
+    });
+  };
+
+  return (
     <div>
-        <h1>Weather</h1>
-        <form onSubmit={getForecast}>
-            <input
-                className="Input"
-                type="text"
-                placeholder="Search City"
-                value={input}
-                onChange={handleChange}
-                required
-                />
-            <button className="search" type="submit">Search</button>
-        </form>
-        <CityCard
-            responseObj={responseObj}
-            error={error} 
-            isLoading={isLoading} 
-            />
-        {isLoading && <p> Loading {input} weather ... </p>}
-        {error && <p> Uppss! </p>}
-</div>
-   )
+      <h1>Weather</h1>
+      <form onSubmit={getForecast}>
+          <input
+              className="Input"
+              type="text"
+              placeholder="Search City"
+              value={input}
+              onChange={handleChange}
+              required="required"/>
+          <Button onSubmit={onSubmit} isButtonDisabled={!input}/>
+      </form>
+      {cityCards.length !== 0 && cityCards.map((item) => (
+      <div key={item.id}>
+          <CityCard responseObj={item} deleteCity={deleteCity}/>
+      </div>
+      ))} {isLoading &&
+      <p>
+          Loading {input} weather ...
+      </p>} {error &&
+      <p>
+          Uppss!
+      </p>}
+    </div>
+  )
 }
